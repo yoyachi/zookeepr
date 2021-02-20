@@ -76,4 +76,4 @@ app.listen(PORT, () => {
 
   //to share app link:  https://<your-app>.herokuapp.com/api/animal
 
-  //https://sleepy-stream-58373.herokuapp.com/
+ //https://app-zoomaster.herokuapp.com/api/animals

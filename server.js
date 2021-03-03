@@ -89,8 +89,15 @@ app.get("/",(req, res) => {
   res.send("home")
 });
 -*/
-// to parse incoming string or array data
+// MIDDLEWARE FUNCTIONS!!!  to parse(convert) incoming string or array data
+
+//another middleware function  'express.static()' method. It tells the server to make file "public" static resource. This means that all of our front-end code can now be accessed without having a specific server endpoint created for it!
+//we always want to use this middleware creating a app
+app.use(express.static("public"));
+
+//express.urlencoded({extended: true}) is a method built into Express.js. It takes incoming POST data and converts it to key/value pairings that can be accessed in the req.body object. The extended: true option set inside the method call informs our server that there may be sub-array data nested in it as well, so it needs to look as deep into the POST data as possible to parse all of the data correctly.
 app.use(express.urlencoded({ extended: true }));
+
 //parse incoming JSON data
 app.use(express.json());
 
@@ -112,7 +119,7 @@ app.get('/api/animals/:id', (req, res) => {
   }
 
 });
-
+//app.post() is a method to create POST routes that accept incoming data from a client request.
 app.post('/api/animals', (req, res) => {
   // set id based on what the next index of the array will be
   req.body.id = animals.length.toString();
@@ -130,6 +137,11 @@ app.post('/api/animals', (req, res) => {
   
 });
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`API server now on port ${PORT}!`);
@@ -138,3 +150,6 @@ app.listen(PORT, () => {
   //to share app link:  https://<your-app>.herokuapp.com/api/animals
 
  //https://app-zoomaster.herokuapp.com/api/animals
+
+ //We use Insomnia Core to test our POST requests while we wait for the zoo's front-end designer to give us client-side code.
+

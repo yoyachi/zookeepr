@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path"); 
 const express = require('express');
 const { animals } = require('./data/animals');
 
@@ -47,10 +49,59 @@ function findById(id, animalsArray) {
   const result = animalsArray.filter(animal => animal.id === id)[0];
   return result;
 }
+function createNewAnimal(body, animalsArray) {
+  const animal = body;
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, "./data/animals.json"),
+    //JSON.stringify convert and save the JavaScript array data as JSON
+    JSON.stringify({ animals: animalsArray }, null, 2) //null argument means we dont want to edit existing data. The 2 indicates we want to create white space between our values to make it more readable. These are not required, but the animals.json file will look more organize and readable.
+  );
+  //our function's main code will go here!
+
+  //return finished code to post route for response
+  return animal;
+}
+//validating our data
+function validateAnimal(animal) {
+  if (!animal.name || typeof animal.name !== 'string') {
+    return false;
+  }
+  if(!animal.species || typeof animal.species !== "string") {
+    return false;
+  }
+  if (!animal.diet || typeof animal.diet !== "string")  {
+    return false;
+  }
+  if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
+    return false;
+  }
+  return true;
+}
+
+/*-app.get works as same as app.post
+example:
+app.post("/", (req, res) => {
+  res.send("home")
+}); 
+note: worked this code with tutor.
 app.get("/",(req, res) => {
   res.send("home")
-})
+});
+-*/
+// MIDDLEWARE FUNCTIONS!!!  to parse(convert) incoming string or array data
 
+//another middleware function  'express.static()' method. It tells the server to make file "public" static resource. This means that all of our front-end code can now be accessed without having a specific server endpoint created for it!
+//we always want to use this middleware creating a app
+app.use(express.static("public"));
+
+//express.urlencoded({extended: true}) is a method built into Express.js. It takes incoming POST data and converts it to key/value pairings that can be accessed in the req.body object. The extended: true option set inside the method call informs our server that there may be sub-array data nested in it as well, so it needs to look as deep into the POST data as possible to parse all of the data correctly.
+app.use(express.urlencoded({ extended: true }));
+
+//parse incoming JSON data
+app.use(express.json());
+
+//respond with "home" when a GET request is made to the homepage.
 app.get('/api/animals', (req, res) => {
   let results = animals;
   if (req.query) {
@@ -68,12 +119,37 @@ app.get('/api/animals/:id', (req, res) => {
   }
 
 });
+//app.post() is a method to create POST routes that accept incoming data from a client request.
+app.post('/api/animals', (req, res) => {
+  // set id based on what the next index of the array will be
+  req.body.id = animals.length.toString();
+
+  //if any data in req.body is incorrect, send 400 error back
+  if (!validateAnimal(req.body)) {
+    res.status(400).send("The animal is not properly formatted.");
+  } else {
+    //add animal to json file and animals array in this function
+  const animal = createNewAnimal(req.body, animals);
+  
+  res.json(animal);
+  }
+
+  
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
 
 
 app.listen(PORT, () => {
   console.log(`API server now on port ${PORT}!`);
 });
 
-  //to share app link:  https://<your-app>.herokuapp.com/api/animal
+  //to share app link:  https://<your-app>.herokuapp.com/api/animals
 
-  //https://sleepy-stream-58373.herokuapp.com/
+ //https://app-zoomaster.herokuapp.com/api/animals
+
+ //We use Insomnia Core to test our POST requests while we wait for the zoo's front-end designer to give us client-side code.
+
